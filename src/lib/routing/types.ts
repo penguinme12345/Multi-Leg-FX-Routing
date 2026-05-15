@@ -36,6 +36,22 @@ export type Edge = {
 export type EdgeBuildResult = {
   edges: Edge[];
   warnings: string[];
+  providerHealth: ProviderHealth[];
+};
+
+export type ProviderHealthStatus =
+  | "online"
+  | "static_loaded"
+  | "timeout"
+  | "failed"
+  | "malformed_response"
+  | "skipped";
+
+export type ProviderHealth = {
+  provider: string;
+  status: ProviderHealthStatus;
+  edgeCount: number;
+  message?: string;
 };
 
 export type RouteLegResult = {
@@ -60,11 +76,22 @@ export type RankedRouteResult = RouteResult & {
   rank: number;
 };
 
+export type AmountSensitivityPoint = {
+  amount: number;
+  path: string[] | null;
+  providerSequence: string[];
+  finalAmount: number | null;
+  differenceVsDirect: number | null;
+  message?: string;
+};
+
 export type RoutesResponse = {
   source: string;
   target: string;
   amount: number;
   routes: RankedRouteResult[];
+  providerHealth: ProviderHealth[];
+  amountSensitivity: AmountSensitivityPoint[];
   warnings: string[];
   message?: string;
 };

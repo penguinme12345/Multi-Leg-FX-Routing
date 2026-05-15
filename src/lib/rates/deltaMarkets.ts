@@ -1,6 +1,12 @@
-import { fetchJsonWithTimeout, summarizeLiveWarnings, withMemoryCache } from "@/lib/rates/http";
+import {
+  buildLiveProviderHealth,
+  classifyRateError,
+  fetchJsonWithTimeout,
+  summarizeLiveWarnings,
+  withMemoryCache
+} from "@/lib/rates/http";
 import { isLiveRateCurrency } from "@/lib/rates/currencyFilters";
-import type { Edge, EdgeBuildResult, Provider } from "@/lib/routing/types";
+import type { Edge, EdgeBuildResult, Provider, ProviderHealthStatus } from "@/lib/routing/types";
 
 type FawazResponse = {
   date?: string;
@@ -10,20 +16,38 @@ type BaseResult = {
   base: string;
   edges: Edge[];
   failed: boolean;
+  failureReason?: ProviderHealthStatus;
 };
 
 export async function fetchDeltaMarketsEdges(provider: Provider, baseCurrencies: string[]): Promise<EdgeBuildResult> {
   if (!provider.api) {
-    return { edges: [], warnings: [`${provider.name} unavailable. Missing API configuration.`] };
+    return {
+      edges: [],
+      warnings: [`${provider.name} unavailable. Missing API configuration.`],
+      providerHealth: [
+        {
+          provider: provider.name,
+          status: "failed",
+          edgeCount: 0,
+          message: "Missing API configuration."
+        }
+      ]
+    };
   }
 
   const results = await Promise.all(baseCurrencies.map((base) => fetchBaseRates(provider, base)));
   const edges = results.flatMap((result) => result.edges);
-  const failedBases = results.filter((result) => result.failed).map((result) => result.base);
+  const failedBases = results
+    .filter((result) => result.failed)
+    .map((result) => ({
+      base: result.base,
+      failureReason: result.failureReason ?? "failed"
+    }));
 
   return {
     edges,
-    warnings: summarizeLiveWarnings(provider.name, failedBases, baseCurrencies.length, edges.length)
+    warnings: summarizeLiveWarnings(provider.name, failedBases, baseCurrencies.length, edges.length),
+    providerHealth: [buildLiveProviderHealth(provider.name, failedBases, baseCurrencies.length, edges.length)]
   };
 }
 
@@ -54,11 +78,12 @@ async function fetchBaseRates(provider: Provider, base: string): Promise<BaseRes
           feeFlat: provider.fee_model.fee_flat
         }))
     };
-  } catch {
+  } catch (error) {
     return {
       base,
       edges: [],
-      failed: true
+      failed: true,
+      failureReason: classifyRateError(error)
     };
   }
 }

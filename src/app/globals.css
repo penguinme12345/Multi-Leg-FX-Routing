@@ -71,6 +71,11 @@ button {
   text-transform: uppercase;
 }
 
+.eyebrow.compact {
+  margin-bottom: 5px;
+  font-size: 0.68rem;
+}
+
 .app-title {
   margin: 0;
   color: var(--ink);
@@ -237,6 +242,19 @@ button {
   min-height: 52px;
 }
 
+.panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.insight-panel {
+  overflow: hidden;
+}
+
 .result-context {
   color: var(--muted);
   font-size: 0.9rem;
@@ -269,6 +287,69 @@ button {
   padding-left: 18px;
   color: var(--warning);
   font-size: 0.9rem;
+}
+
+.health-grid {
+  display: grid;
+}
+
+.health-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.health-row:last-child {
+  border-bottom: 0;
+}
+
+.health-provider {
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 850;
+}
+
+.health-message {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.status-chip {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.status-chip.good {
+  border-color: #b7dfc5;
+  background: #e6f4ea;
+  color: var(--gain);
+}
+
+.status-chip.neutral {
+  border-color: #c9d7ef;
+  background: #edf3ff;
+  color: #2456a6;
+}
+
+.status-chip.warn {
+  border-color: #f0d2a5;
+  background: #fff5e6;
+  color: var(--warning);
+}
+
+.status-chip.bad {
+  border-color: #f1b7b0;
+  background: #fce8e6;
+  color: var(--danger);
 }
 
 .error-box {
@@ -395,10 +476,18 @@ button {
   border-top: 1px solid var(--line);
 }
 
+.table-wrap.compact-table {
+  border-top: 0;
+}
+
 .leg-table {
   width: 100%;
   min-width: 760px;
   border-collapse: collapse;
+}
+
+.sensitivity-table {
+  min-width: 900px;
 }
 
 .leg-table th,
@@ -478,6 +567,11 @@ button {
 
   .status-cell:first-child {
     border-top: 0;
+  }
+
+  .panel-heading,
+  .health-row {
+    grid-template-columns: 1fr;
   }
 
   .route-heading {

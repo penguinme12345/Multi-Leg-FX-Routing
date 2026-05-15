@@ -2,19 +2,19 @@ import { getConfiguredCurrencies } from "@/lib/providers";
 import { fetchAlphaFxEdges } from "@/lib/rates/alphaFx";
 import { fetchBetaBankEdges } from "@/lib/rates/betaBank";
 import { fetchDeltaMarketsEdges } from "@/lib/rates/deltaMarkets";
-import { buildStaticEdges } from "@/lib/rates/staticProviders";
+import { buildStaticEdgeResult } from "@/lib/rates/staticProviders";
 import type { EdgeBuildResult, Provider } from "@/lib/routing/types";
 
 const STABLECOINS = new Set(["USDC", "USDT", "DAI"]);
 const COMMON_FIAT_BASES = ["USD", "EUR", "GBP"];
 
 export async function buildEdges(providers: Provider[], source: string, target: string): Promise<EdgeBuildResult> {
-  const staticEdges = buildStaticEdges(providers);
+  const staticResult = buildStaticEdgeResult(providers);
   const baseCurrencies = getLiveBaseCurrencies(providers, source, target);
   const liveProviders = providers.filter((provider) => provider.rate_source === "live_api");
 
-  const liveResults = await Promise.all(
-    liveProviders.map((provider) => {
+  const liveResults: EdgeBuildResult[] = await Promise.all(
+    liveProviders.map((provider): Promise<EdgeBuildResult> => {
       switch (provider.name) {
         case "AlphaFX":
           return fetchAlphaFxEdges(provider, baseCurrencies);
@@ -25,15 +25,27 @@ export async function buildEdges(providers: Provider[], source: string, target: 
         default:
           return Promise.resolve({
             edges: [],
-            warnings: [`${provider.name} unavailable. No fetcher is implemented for this provider.`]
+            warnings: [`${provider.name} skipped. No fetcher is implemented for this provider.`],
+            providerHealth: [
+              {
+                provider: provider.name,
+                status: "skipped",
+                edgeCount: 0,
+                message: "No live fetcher is implemented for this provider."
+              }
+            ]
           });
       }
     })
   );
 
   return {
-    edges: [...liveResults.flatMap((result) => result.edges), ...staticEdges],
-    warnings: liveResults.flatMap((result) => result.warnings)
+    edges: [...liveResults.flatMap((result) => result.edges), ...staticResult.edges],
+    warnings: [...liveResults.flatMap((result) => result.warnings), ...staticResult.warnings],
+    providerHealth: [
+      ...liveResults.flatMap((result) => result.providerHealth),
+      ...staticResult.providerHealth
+    ]
   };
 }
 

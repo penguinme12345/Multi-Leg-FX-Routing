@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { AmountSensitivity } from "@/components/AmountSensitivity";
 import { CurrencyForm } from "@/components/CurrencyForm";
 import { formatAmount } from "@/components/format";
+import { ProviderHealth } from "@/components/ProviderHealth";
 import { RouteCard } from "@/components/RouteCard";
 import type { RoutesResponse } from "@/lib/routing/types";
 
@@ -145,6 +147,16 @@ export default function Home() {
                   ))}
                 </ul>
               </div>
+            ) : null}
+
+            {!loading && result ? <ProviderHealth providers={result.providerHealth} /> : null}
+
+            {!loading && result ? (
+              <AmountSensitivity
+                points={result.amountSensitivity}
+                source={result.source}
+                target={result.target}
+              />
             ) : null}
 
             {loading ? (

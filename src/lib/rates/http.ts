@@ -1,3 +1,5 @@
+import type { ProviderHealth, ProviderHealthStatus } from "@/lib/routing/types";
+
 const DEFAULT_TIMEOUT_MS = 3500;
 const DEFAULT_CACHE_TTL_MS = 10 * 60 * 1000;
 
@@ -51,9 +53,26 @@ export async function withMemoryCache<T>(
   return value;
 }
 
+export type FailedBase = {
+  base: string;
+  failureReason: ProviderHealthStatus;
+};
+
+export function classifyRateError(error: unknown): ProviderHealthStatus {
+  if (isAbortError(error)) {
+    return "timeout";
+  }
+
+  if (error instanceof Error && error.message.toLowerCase().includes("malformed")) {
+    return "malformed_response";
+  }
+
+  return "failed";
+}
+
 export function summarizeLiveWarnings(
   provider: string,
-  failedBases: string[],
+  failedBases: FailedBase[],
   totalBases: number,
   edgeCount: number
 ) {
@@ -61,11 +80,77 @@ export function summarizeLiveWarnings(
     return [];
   }
 
+  const status = chooseFailureStatus(failedBases);
+  const phrase = status === "timeout" ? "timed out" : status === "malformed_response" ? "returned malformed data" : "failed";
+
   if (edgeCount === 0 || failedBases.length === totalBases) {
-    return [`${provider} unavailable. Results exclude this provider.`];
+    return [`${provider} ${phrase}. Results exclude this provider.`];
   }
 
-  const displayedBases = failedBases.slice(0, 5).join(", ");
+  const displayedBases = failedBases
+    .slice(0, 5)
+    .map((failure) => failure.base)
+    .join(", ");
   const suffix = failedBases.length > 5 ? ` and ${failedBases.length - 5} more` : "";
   return [`${provider} unavailable for ${displayedBases}${suffix}. Partial ${provider} rates excluded.`];
+}
+
+export function buildLiveProviderHealth(
+  provider: string,
+  failedBases: FailedBase[],
+  totalBases: number,
+  edgeCount: number
+): ProviderHealth {
+  if (failedBases.length === 0) {
+    return {
+      provider,
+      status: "online",
+      edgeCount,
+      message: `${edgeCount} live rates loaded.`
+    };
+  }
+
+  if (edgeCount > 0 && failedBases.length < totalBases) {
+    return {
+      provider,
+      status: "online",
+      edgeCount,
+      message: `${edgeCount} live rates loaded; ${failedBases.length} base currencies unavailable.`
+    };
+  }
+
+  const status = chooseFailureStatus(failedBases);
+
+  return {
+    provider,
+    status,
+    edgeCount,
+    message:
+      status === "timeout"
+        ? "Provider timed out and was excluded."
+        : status === "malformed_response"
+          ? "Provider returned malformed data and was excluded."
+          : "Provider failed and was excluded."
+  };
+}
+
+function chooseFailureStatus(failedBases: FailedBase[]): ProviderHealthStatus {
+  if (failedBases.some((failure) => failure.failureReason === "timeout")) {
+    return "timeout";
+  }
+
+  if (failedBases.some((failure) => failure.failureReason === "malformed_response")) {
+    return "malformed_response";
+  }
+
+  return "failed";
+}
+
+function isAbortError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    (error as { name?: unknown }).name === "AbortError"
+  );
 }

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ProviderConfigError, loadProviders } from "@/lib/providers";
+import { buildAmountSensitivity } from "@/lib/routing/amountSensitivity";
 import { buildEdges } from "@/lib/routing/buildEdges";
 import { collectSupportedCurrencies, findTopRoutes } from "@/lib/routing/findTopRoutes";
-import type { RoutesResponse } from "@/lib/routing/types";
+import type { ProviderHealth, RoutesResponse } from "@/lib/routing/types";
 
 export const dynamic = "force-dynamic";
 
@@ -36,16 +37,20 @@ export async function POST(request: NextRequest) {
       return jsonError(
         `Unsupported or unavailable currency. ${source} and ${target} must appear in provider rates.`,
         400,
-        edgeResult.warnings
+        edgeResult.warnings,
+        edgeResult.providerHealth
       );
     }
 
     const routes = findTopRoutes(source, target, amount, edgeResult.edges);
+    const amountSensitivity = buildAmountSensitivity(source, target, edgeResult.edges);
     const response: RoutesResponse = {
       source,
       target,
       amount,
       routes,
+      providerHealth: edgeResult.providerHealth,
+      amountSensitivity,
       warnings: edgeResult.warnings,
       message: routes.length === 0 ? `No valid routes found for ${source} to ${target}.` : undefined
     };
@@ -123,11 +128,18 @@ function readCurrency(value: unknown) {
   return value.trim().toUpperCase();
 }
 
-function jsonError(error: string, status: number, warnings: string[] = []) {
+function jsonError(
+  error: string,
+  status: number,
+  warnings: string[] = [],
+  providerHealth: ProviderHealth[] = []
+) {
   return NextResponse.json(
     {
       error,
       warnings,
+      providerHealth,
+      amountSensitivity: [],
       routes: []
     },
     { status }
