@@ -7,6 +7,75 @@ Internal FX routing dashboard for comparing direct and multi-leg execution paths
 - Live deployment: https://multi-leg-fx-routing-ecru.vercel.app/
 - GitHub repository: https://github.com/penguinme12345/Multi-Leg-FX-Routing
 
+## Assignment Submission Answers
+
+### How To Run Locally
+
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+Useful verification commands:
+
+```bash
+npm run typecheck
+npm test
+npm run build
+```
+
+### AI Tools Used
+
+I used OpenAI Codex as an AI-assisted development tool throughout the project. My workflow was based around writing structured Markdown planning files before asking Codex to implement changes.
+
+Specifically, I created Markdown documents such as PRDs, feature specs, UI overhaul notes, and implementation checklists. These files described the expected behavior, data models, acceptance criteria, edge cases, and implementation order for each major feature. I then used Codex to help translate those Markdown specs into TypeScript/React code.
+
+Examples of how I used Codex:
+
+- I wrote PRD-style Markdown files for the base routing engine, dashboard UI overhaul, provider health, outage simulation, route explanations, and final interview polish features.
+- I used those `.md` files as structured context so Codex had clear requirements before editing code.
+- I asked Codex to implement features incrementally instead of generating the whole app at once.
+- I used Codex to scaffold components, update TypeScript types, refactor repeated UI patterns, and add tests.
+- I reviewed the generated changes manually, especially around route simulation, fee calculation, provider normalization, and direct-route comparison.
+- I ran `npm run typecheck`, `npm test`, and `npm run build` after major changes to catch issues.
+
+This approach helped me use AI as an implementation partner while keeping the modeling, validation, and review decisions explicit. The Markdown specs forced me to define the problem clearly before asking Codex to code it.
+
+### One Thing AI Got Wrong
+
+One issue I caught was that the AI-generated implementation and explanations treated every calculated route as economically valid as long as the math worked against the provided rates. The route engine was technically calculating the outputs correctly using the provider rates and fee models, including the static values from `providers.json`. However, some results were economically suspicious when compared to real-world FX behavior.
+
+For example, certain routes were artificially boosted because the app was combining live fiat API rates with configured static stablecoin rates. The calculation was correct based on the assignment data, but the AI did not initially flag that a route producing an unusually large improvement versus the direct benchmark might indicate stale or inconsistent rate sources.
+
+I caught this by manually reviewing the route outputs and comparing whether the results made sense from a real-world finance perspective, not just from a mathematical perspective. To address it, I added a `Review Required` warning for routes that beat the direct benchmark by an unusually large percentage. This keeps the route visible and ranked correctly according to the provided data, but clearly signals that the user should manually review the rate sources before treating the route as realistic or executable.
+
+### How I Modeled The Routing Problem
+
+I modeled the FX routing problem as a directed graph. Each currency is a node, and each provider quote is a directed edge from one currency to another. Each edge stores the provider name, source currency, target currency, exchange rate, fee percentage, flat fee, and rate source.
+
+The app first normalizes both live API rates and configured static pairs from `providers.json` into this shared edge format. This keeps the routing engine provider-agnostic, meaning the route calculation does not need to care whether a rate came from a live fiat API or a configured stablecoin venue.
+
+For each request, the engine generates every valid route from the source currency to the target currency up to the assignment limit of 3 legs. Each candidate route is simulated leg by leg, with fees applied before conversion on every leg. The routes are then ranked by final delivered amount, and the top 3 are returned with a direct-route benchmark, per-leg breakdown, provider health, and review warnings when needed.
+
+I used bounded exhaustive search rather than shortest-path optimization because routes are capped at 3 legs and fees make each leg amount-dependent.
+
+### One Thing I Would Do Differently With More Time
+
+With more time, I would focus on moving the project closer to a production-ready internal trading tool.
+
+First, I would improve financial precision. The current implementation uses JavaScript numbers for route simulation and rounds values at the presentation layer. For a production financial system, I would use decimal arithmetic, fixed-point integer minor units, or a dedicated decimal library to avoid floating-point precision issues across multi-leg routes.
+
+Second, I would add persistent audit logging. The app currently shows provider health, diagnostics, route warnings, and calculation audit trails in the UI, but it does not save route review records. In a production version, I would persist each request, provider status, selected route, warnings, timestamps, and calculation details so route decisions could be reviewed or reconciled later.
+
+Third, I would add authentication and role-based access control. This case-study version is a public demo and does not execute trades, but a real internal trading operations dashboard should only be accessible to authorized users. Different roles could have different permissions, such as viewing routes, simulating provider outages, or changing provider settings.
+
+Finally, I would continue improving the UI and QA coverage. I would polish responsive layouts, add more charting around route performance and provider coverage, expand edge-case testing, and improve bug handling around unusual rate combinations or provider failures.
+
+## Supporting Project Details
+
 ## Tech Stack
 
 - Next.js App Router
@@ -234,50 +303,3 @@ npm run build
 - Live fiat providers are fetched for source, target, configured fiat currencies, and common hubs.
 - Static rates are case-study data, not institutional-grade executable quotes.
 - The first version does not execute trades, persist orders, or authenticate users.
-
-## AI Tools Used
-
-I used OpenAI Codex as an AI-assisted development tool throughout the project. My workflow was based around writing structured Markdown planning files before asking Codex to implement changes.
-
-Specifically, I created Markdown documents such as PRDs, feature specs, UI overhaul notes, and implementation checklists. These files described the expected behavior, data models, acceptance criteria, edge cases, and implementation order for each major feature. I then used Codex to help translate those Markdown specs into TypeScript/React code.
-
-Examples of how I used Codex:
-
-- I wrote PRD-style Markdown files for the base routing engine, dashboard UI overhaul, provider health, outage simulation, route explanations, and final interview polish features.
-- I used those `.md` files as structured context so Codex had clear requirements before editing code.
-- I asked Codex to implement features incrementally instead of generating the whole app at once.
-- I used Codex to scaffold components, update TypeScript types, refactor repeated UI patterns, and add tests.
-- I reviewed the generated changes manually, especially around route simulation, fee calculation, provider normalization, and direct-route comparison.
-- I ran `npm run typecheck`, `npm test`, and `npm run build` after major changes to catch issues.
-
-This approach helped me use AI as an implementation partner while keeping the modeling, validation, and review decisions explicit. The Markdown specs forced me to define the problem clearly before asking Codex to code it.
-
-## One Thing AI Got Wrong
-
-One issue I caught was that the AI-generated implementation and explanations treated every calculated route as economically valid as long as the math worked against the provided rates. The route engine was technically calculating the outputs correctly using the provider rates and fee models, including the static values from `providers.json`. However, some results were economically suspicious when compared to real-world FX behavior.
-
-For example, certain routes were artificially boosted because the app was combining live fiat API rates with configured static stablecoin rates. The calculation was correct based on the assignment data, but the AI did not initially flag that a route producing an unusually large improvement versus the direct benchmark might indicate stale or inconsistent rate sources.
-
-I caught this by manually reviewing the route outputs and comparing whether the results made sense from a real-world finance perspective, not just from a mathematical perspective. To address it, I added a `Review Required` warning for routes that beat the direct benchmark by an unusually large percentage. This keeps the route visible and ranked correctly according to the provided data, but clearly signals that the user should manually review the rate sources before treating the route as realistic or executable.
-
-## How I Modeled the Routing Problem
-
-I modeled the FX routing problem as a directed graph. Each currency is a node, and each provider quote is a directed edge from one currency to another. Each edge stores the provider name, source currency, target currency, exchange rate, fee percentage, flat fee, and rate source.
-
-The app first normalizes both live API rates and configured static pairs from `providers.json` into this shared edge format. This keeps the routing engine provider-agnostic, meaning the route calculation does not need to care whether a rate came from a live fiat API or a configured stablecoin venue.
-
-For each request, the engine generates every valid route from the source currency to the target currency up to the assignment limit of 3 legs. Each candidate route is simulated leg by leg, with fees applied before conversion on every leg. The routes are then ranked by final delivered amount, and the top 3 are returned with a direct-route benchmark, per-leg breakdown, provider health, and review warnings when needed.
-
-I used bounded exhaustive search rather than shortest-path optimization because routes are capped at 3 legs and fees make each leg amount-dependent.
-
-## With More Time
-
-With more time, I would focus on moving the project closer to a production-ready internal trading tool.
-
-First, I would improve financial precision. The current implementation uses JavaScript numbers for route simulation and rounds values at the presentation layer. For a production financial system, I would use decimal arithmetic, fixed-point integer minor units, or a dedicated decimal library to avoid floating-point precision issues across multi-leg routes.
-
-Second, I would add persistent audit logging. The app currently shows provider health, diagnostics, route warnings, and calculation audit trails in the UI, but it does not save route review records. In a production version, I would persist each request, provider status, selected route, warnings, timestamps, and calculation details so route decisions could be reviewed or reconciled later.
-
-Third, I would add authentication and role-based access control. This case-study version is a public demo and does not execute trades, but a real internal trading operations dashboard should only be accessible to authorized users. Different roles could have different permissions, such as viewing routes, simulating provider outages, or changing provider settings.
-
-Finally, I would continue improving the UI and QA coverage. I would polish responsive layouts, add more charting around route performance and provider coverage, expand edge-case testing, and improve bug handling around unusual rate combinations or provider failures.
