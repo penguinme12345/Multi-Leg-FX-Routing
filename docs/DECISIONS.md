@@ -35,3 +35,19 @@ Flat fees and percentage fees affect small and large transfers differently. The 
 ## Decision: Use A Vitest Launcher On Windows
 
 The project folder contains `#`, and Vite can misread that character in Windows paths. I added `scripts/run-vitest.cjs` to resolve a short Windows path before launching Vitest. This keeps the test suite runnable without renaming the assignment folder.
+
+## Decision: Add Effective Rate To Route Results
+
+Trading users often compare routes by all-in rate, not only final delivered amount. The API now returns `effectiveRate` as final delivered amount divided by starting amount. This includes every fee and conversion because it is calculated after full route simulation.
+
+## Decision: Explain Routes From Data
+
+Route explanations are generated from route characteristics: rank, direct-route comparison, number of legs, and stablecoin usage. The explanation logic stays intentionally conservative so it does not claim unsupported facts about market quality or execution risk.
+
+## Decision: Model Complexity Separately From Ranking
+
+The highest-delivering route may be operationally more complex. I calculate Low, Medium, or High complexity from legs, unique providers, intermediate currencies, stablecoin usage, and mixed rails. Complexity is displayed for user judgment but does not change ranking.
+
+## Decision: Simulate Outages Before Fetching Disabled Providers
+
+Disabled providers are filtered out before live API fetches and before static edge construction. This makes outage simulation realistic and avoids unnecessary network calls. Provider Health marks disabled providers as `simulated_outage`, and warnings make the exclusion explicit.

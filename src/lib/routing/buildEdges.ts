@@ -3,15 +3,28 @@ import { fetchAlphaFxEdges } from "@/lib/rates/alphaFx";
 import { fetchBetaBankEdges } from "@/lib/rates/betaBank";
 import { fetchDeltaMarketsEdges } from "@/lib/rates/deltaMarkets";
 import { buildStaticEdgeResult } from "@/lib/rates/staticProviders";
+import {
+  buildSimulatedOutageHealth,
+  buildSimulatedOutageWarnings,
+  filterDisabledProviders
+} from "@/lib/routing/filterProviders";
 import type { EdgeBuildResult, Provider } from "@/lib/routing/types";
 
 const STABLECOINS = new Set(["USDC", "USDT", "DAI"]);
 const COMMON_FIAT_BASES = ["USD", "EUR", "GBP"];
 
-export async function buildEdges(providers: Provider[], source: string, target: string): Promise<EdgeBuildResult> {
-  const staticResult = buildStaticEdgeResult(providers);
-  const baseCurrencies = getLiveBaseCurrencies(providers, source, target);
-  const liveProviders = providers.filter((provider) => provider.rate_source === "live_api");
+export async function buildEdges(
+  providers: Provider[],
+  source: string,
+  target: string,
+  disabledProviders: string[] = []
+): Promise<EdgeBuildResult> {
+  const activeProviders = filterDisabledProviders(providers, disabledProviders);
+  const staticResult = buildStaticEdgeResult(activeProviders);
+  const baseCurrencies = getLiveBaseCurrencies(activeProviders, source, target);
+  const liveProviders = activeProviders.filter((provider) => provider.rate_source === "live_api");
+  const outageHealth = buildSimulatedOutageHealth(disabledProviders);
+  const outageWarnings = buildSimulatedOutageWarnings(disabledProviders);
 
   const liveResults: EdgeBuildResult[] = await Promise.all(
     liveProviders.map((provider): Promise<EdgeBuildResult> => {
@@ -41,8 +54,13 @@ export async function buildEdges(providers: Provider[], source: string, target: 
 
   return {
     edges: [...liveResults.flatMap((result) => result.edges), ...staticResult.edges],
-    warnings: [...liveResults.flatMap((result) => result.warnings), ...staticResult.warnings],
+    warnings: [
+      ...outageWarnings,
+      ...liveResults.flatMap((result) => result.warnings),
+      ...staticResult.warnings
+    ],
     providerHealth: [
+      ...outageHealth,
       ...liveResults.flatMap((result) => result.providerHealth),
       ...staticResult.providerHealth
     ]

@@ -50,13 +50,12 @@ describe("static provider normalization", () => {
   it("reports static provider health", () => {
     const result = buildStaticEdgeResult(providers);
 
-    expect(result.providerHealth).toEqual([
-      {
-        provider: "StaticVenue",
-        status: "static_loaded",
-        edgeCount: 1,
-        message: "1 configured static pairs loaded."
-      }
-    ]);
+    expect(result.providerHealth[0]).toMatchObject({
+      provider: "StaticVenue",
+      status: "static_loaded",
+      edgeCount: 1,
+      message: "1 configured static pairs loaded."
+    });
+    expect(result.providerHealth[0].checkedAt).toEqual(expect.any(String));
   });
 });

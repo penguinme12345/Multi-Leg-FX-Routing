@@ -28,6 +28,7 @@ export function buildStaticEdgeResult(providers: Provider[]): EdgeBuildResult {
       provider: provider.name,
       status: "static_loaded",
       edgeCount,
+      checkedAt: new Date().toISOString(),
       message: `${edgeCount} configured static pairs loaded.`
     };
   });

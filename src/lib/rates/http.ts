@@ -1,7 +1,7 @@
 import type { ProviderHealth, ProviderHealthStatus } from "@/lib/routing/types";
 
-const DEFAULT_TIMEOUT_MS = 3500;
-const DEFAULT_CACHE_TTL_MS = 10 * 60 * 1000;
+const DEFAULT_TIMEOUT_MS = readNumberEnv("RATE_API_TIMEOUT_MS", 3500);
+const DEFAULT_CACHE_TTL_MS = readNumberEnv("RATE_CACHE_TTL_SECONDS", 600) * 1000;
 
 type CacheEntry<T> = {
   expiresAt: number;
@@ -106,6 +106,7 @@ export function buildLiveProviderHealth(
       provider,
       status: "online",
       edgeCount,
+      checkedAt: new Date().toISOString(),
       message: `${edgeCount} live rates loaded.`
     };
   }
@@ -115,6 +116,7 @@ export function buildLiveProviderHealth(
       provider,
       status: "online",
       edgeCount,
+      checkedAt: new Date().toISOString(),
       message: `${edgeCount} live rates loaded; ${failedBases.length} base currencies unavailable.`
     };
   }
@@ -125,6 +127,7 @@ export function buildLiveProviderHealth(
     provider,
     status,
     edgeCount,
+    checkedAt: new Date().toISOString(),
     message:
       status === "timeout"
         ? "Provider timed out and was excluded."
@@ -153,4 +156,10 @@ function isAbortError(error: unknown) {
     "name" in error &&
     (error as { name?: unknown }).name === "AbortError"
   );
+}
+
+function readNumberEnv(name: string, fallback: number) {
+  const value = Number(process.env[name]);
+
+  return Number.isFinite(value) && value > 0 ? value : fallback;
 }

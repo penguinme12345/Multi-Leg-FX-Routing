@@ -1,3 +1,5 @@
+import { calculateComplexity } from "@/lib/routing/calculateComplexity";
+import { calculateEffectiveRate } from "@/lib/routing/calculateEffectiveRate";
 import type { Edge, RouteLegResult, RouteResult } from "@/lib/routing/types";
 
 export function simulateRoute(route: Edge[], initialAmount: number): RouteResult | null {
@@ -24,9 +26,12 @@ export function simulateRoute(route: Edge[], initialAmount: number): RouteResult
 
     legs.push({
       provider: edge.provider,
+      providerType: edge.providerType,
       from: edge.from,
       to: edge.to,
       rate: edge.rate,
+      feePercent: edge.feePercent,
+      feeFlat: edge.feeFlat,
       inputAmount: currentAmount,
       fee,
       amountAfterFee,
@@ -40,6 +45,10 @@ export function simulateRoute(route: Edge[], initialAmount: number): RouteResult
     path: [route[0].from, ...route.map((edge) => edge.to)],
     legs,
     finalAmount: currentAmount,
-    differenceVsDirect: null
+    effectiveRate: calculateEffectiveRate(currentAmount, initialAmount),
+    differenceVsDirect: null,
+    differenceVsDirectPercent: null,
+    complexity: calculateComplexity(legs),
+    explanation: ""
   };
 }

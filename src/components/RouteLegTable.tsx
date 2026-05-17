@@ -16,8 +16,9 @@ export function RouteLegTable({ legs }: RouteLegTableProps) {
             <th>From</th>
             <th>To</th>
             <th className="numeric">Input</th>
-            <th className="numeric">Rate</th>
             <th className="numeric">Fee</th>
+            <th className="numeric">After Fee</th>
+            <th className="numeric">Rate</th>
             <th className="numeric">Output</th>
           </tr>
         </thead>
@@ -29,8 +30,9 @@ export function RouteLegTable({ legs }: RouteLegTableProps) {
               <td>{leg.from}</td>
               <td>{leg.to}</td>
               <td className="numeric">{formatAmount(leg.inputAmount, leg.from)}</td>
-              <td className="numeric">{formatRate(leg.rate)}</td>
               <td className="numeric">{formatAmount(leg.fee, leg.from)}</td>
+              <td className="numeric">{formatAmount(leg.amountAfterFee, leg.from)}</td>
+              <td className="numeric">{formatRate(leg.rate)}</td>
               <td className="numeric">{formatAmount(leg.outputAmount, leg.to)}</td>
             </tr>
           ))}
