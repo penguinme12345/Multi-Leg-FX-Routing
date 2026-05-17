@@ -1,6 +1,0 @@
-
-> multi-leg-fx-routing-tool@0.1.0 backend
-> tsx scripts/backend-only.ts
-
-FX Route Optimizer backend running at http://127.0.0.1:4002
-Routes endpoint: POST http://127.0.0.1:4002/api/routes

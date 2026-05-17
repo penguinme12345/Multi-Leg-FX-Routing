@@ -127,17 +127,20 @@ Documented local environment variables.
 
 ### PRDs
 
-`fx_routing_prd.md`
+`docs/planning/fx_routing_prd.md`
 Original assignment PRD.
 
-`above_and_beyond_fx_routing_prd.md`
+`docs/planning/above_and_beyond_fx_routing_prd.md`
 Expanded feature PRD.
 
-`next_steps_fx_routing_features_prd.md`
+`docs/planning/next_steps_fx_routing_features_prd.md`
 Route explanation, effective rate, copy summary, complexity, examples, and outage simulation PRD.
 
-`FX_Route_Optimizer_UI_Overhaul_PRD.md`
+`docs/planning/FX_Route_Optimizer_UI_Overhaul_PRD.md`
 Dashboard UI overhaul PRD.
+
+`docs/planning/final_interview_polish_upgrades_prd.md`
+Final review-state, rate-source, diagnostics, and sidebar polish PRD.
 
 ### App Layer
 

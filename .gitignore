@@ -12,3 +12,4 @@ yarn-error.log*
 pnpm-debug.log*
 next-server*.log
 backend-only*.log
+backend-review*.log
