@@ -1,4 +1,5 @@
 import { findTopRoutes } from "@/lib/routing/findTopRoutes";
+import { getReviewStatus } from "@/lib/routing/routeReview";
 import type { AmountSensitivityPoint, ComplexityFilter, Edge, RailFilter } from "@/lib/routing/types";
 
 export const DEFAULT_SENSITIVITY_AMOUNTS = [100, 1000, 10000, 100000];
@@ -30,6 +31,7 @@ export function buildAmountSensitivity(
         differenceVsDirect: null,
         differenceVsDirectPercent: null,
         complexity: null,
+        reviewRequired: false,
         message: `No valid route found at ${amount} ${source}.`
       };
     }
@@ -42,7 +44,8 @@ export function buildAmountSensitivity(
       effectiveRate: bestRoute.effectiveRate,
       differenceVsDirect: bestRoute.differenceVsDirect,
       differenceVsDirectPercent: bestRoute.differenceVsDirectPercent,
-      complexity: bestRoute.complexity
+      complexity: bestRoute.complexity,
+      reviewRequired: getReviewStatus(bestRoute).status === "review_required"
     };
   });
 }

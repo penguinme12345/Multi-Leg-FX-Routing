@@ -27,6 +27,7 @@ export function simulateRoute(route: Edge[], initialAmount: number): RouteResult
     legs.push({
       provider: edge.provider,
       providerType: edge.providerType,
+      rateSource: edge.rateSource,
       from: edge.from,
       to: edge.to,
       rate: edge.rate,
@@ -49,6 +50,7 @@ export function simulateRoute(route: Edge[], initialAmount: number): RouteResult
     differenceVsDirect: null,
     differenceVsDirectPercent: null,
     complexity: calculateComplexity(legs),
+    routeWarnings: [],
     explanation: ""
   };
 }

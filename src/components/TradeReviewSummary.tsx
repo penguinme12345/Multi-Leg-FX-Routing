@@ -1,4 +1,6 @@
 import { formatAmount, formatDifference, formatPercent, formatRate } from "@/components/format";
+import { RoutePath } from "@/components/RoutePath";
+import { getReviewStatus } from "@/lib/routing/routeReview";
 import type {
   ProviderCoverage,
   RankedRouteResult,
@@ -29,6 +31,8 @@ export function TradeReviewSummary({
   message
 }: TradeReviewSummaryProps) {
   const coverageText = `${providerCoverage.usableProviders} / ${providerCoverage.totalProviders} providers available`;
+  const reviewStatus = getReviewStatus(recommendedRoute);
+  const warningCount = warnings.length + (recommendedRoute?.routeWarnings.length ?? 0);
 
   return (
     <section className="panel trade-review">
@@ -53,7 +57,7 @@ export function TradeReviewSummary({
             </div>
             <div className="review-wide">
               <span className="review-label">Recommended path</span>
-              <strong>{formatProviderPath(recommendedRoute)}</strong>
+              <strong><RoutePath compact legs={recommendedRoute.legs} /></strong>
             </div>
           </div>
 
@@ -69,14 +73,29 @@ export function TradeReviewSummary({
               }
             />
             <ReviewMetric label="Provider coverage" value={`${coverageText} (${providerCoverage.coveragePercent}%)`} />
+            <ReviewMetric
+              label="Review status"
+              tone={reviewStatus.status === "review_required" ? "warn" : "clear"}
+              value={reviewStatus.status === "review_required" ? "Review Required" : "Clear"}
+            />
             <ReviewMetric label="Operational complexity" value={recommendedRoute.complexity.level} />
             <ReviewMetric label="Provider count" value={String(new Set(recommendedRoute.legs.map((leg) => leg.provider)).size)} />
             <ReviewMetric label="Leg count" value={String(recommendedRoute.legs.length)} />
-            <ReviewMetric label="Warning count" value={String(warnings.length)} />
+            <ReviewMetric label="Warning count" value={String(warningCount)} />
           </div>
 
           <div className="review-note-stack">
             <p className="muted-copy">{resultQuality.reason}</p>
+            {reviewStatus.status === "review_required" ? (
+              <>
+                <p className="coverage-warning">{reviewStatus.reason}</p>
+                {recommendedRoute.routeWarnings.map((warning) => (
+                  <p className="coverage-warning" key={warning.message}>{warning.message}</p>
+                ))}
+              </>
+            ) : (
+              <p className="muted-copy">{reviewStatus.reason}</p>
+            )}
             {providerCoverage.unavailableProviders > 0 ? (
               <p className="coverage-warning">
                 Results are based on partial provider coverage. {providerCoverage.usableProviders} of{" "}
@@ -104,6 +123,7 @@ export function TradeReviewSummary({
             <ReviewMetric label="Order" value={`${formatAmount(amount, source)} to ${target}`} />
             <ReviewMetric label="Provider coverage" value={`${coverageText} (${providerCoverage.coveragePercent}%)`} />
             <ReviewMetric label="Result quality" value={resultQuality.label} />
+            <ReviewMetric label="Review status" value="Clear" />
             <ReviewMetric label="Warning count" value={String(warnings.length)} />
           </div>
           <p className="decision-note">
@@ -115,19 +135,32 @@ export function TradeReviewSummary({
   );
 }
 
-function ReviewMetric({ label, value, primary = false }: { label: string; value: string; primary?: boolean }) {
+function ReviewMetric({
+  label,
+  value,
+  primary = false,
+  tone
+}: {
+  label: string;
+  value: string;
+  primary?: boolean;
+  tone?: "warn" | "clear";
+}) {
+  const className = [
+    "review-metric",
+    primary ? "primary" : "",
+    tone === "warn" ? "review-required" : "",
+    tone === "clear" ? "review-clear" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className={primary ? "review-metric primary" : "review-metric"}>
+    <div className={className}>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
   );
-}
-
-function formatProviderPath(route: RankedRouteResult) {
-  return route.legs
-    .map((leg, index) => `${index === 0 ? leg.from : ""} ->[${leg.provider}]-> ${leg.to}`)
-    .join(" ");
 }
 
 function qualityTone(label: ResultQuality["label"]) {

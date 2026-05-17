@@ -233,7 +233,7 @@ button {
   position: sticky;
   top: 20px;
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .panel {
@@ -325,10 +325,18 @@ button {
   box-shadow: var(--shadow);
 }
 
+.side-stack .form-subsection,
+.side-stack .details-group {
+  border-color: rgba(255, 255, 255, 0.07);
+  background: rgba(24, 24, 27, 0.66);
+  padding: 12px;
+  box-shadow: none;
+}
+
 .form-subsection h3 {
   margin: 0 0 12px;
   color: var(--ink);
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   line-height: 1.25;
 }
 
@@ -343,7 +351,7 @@ button {
 .details-group summary {
   cursor: pointer;
   color: var(--ink);
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   font-weight: 850;
 }
 
@@ -364,8 +372,8 @@ button {
 
 .settings-grid {
   display: grid;
-  gap: 12px;
-  margin-top: 14px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .settings-note {
@@ -399,12 +407,12 @@ button {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
-  min-height: 42px;
+  min-height: 36px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel-alt);
   color: var(--ink);
-  padding: 9px 10px;
+  padding: 7px 9px;
   text-align: left;
 }
 
@@ -418,13 +426,13 @@ button {
 }
 
 .scenario-button span {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 800;
 }
 
 .scenario-button strong {
   color: var(--accent-dark);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 .toggle-list {
@@ -481,6 +489,87 @@ button {
   font-weight: 850;
   line-height: 1.45;
   overflow-wrap: anywhere;
+}
+
+.benchmark-path {
+  overflow-wrap: anywhere;
+}
+
+.route-path-flow {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.route-path-flow.compact {
+  gap: 4px;
+  font-size: 0.84rem;
+}
+
+.route-path-step {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.currency-code,
+.currency-pair {
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 850;
+}
+
+.provider-badge,
+.source-badge,
+.review-status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: #111113;
+  color: var(--ink);
+  padding: 4px 8px;
+  font-size: 0.74rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.route-path-flow.compact .provider-badge {
+  padding: 3px 7px;
+  font-size: 0.7rem;
+}
+
+.route-arrow {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.source-badge.live_api {
+  border-color: rgba(20, 184, 166, 0.38);
+  background: rgba(20, 184, 166, 0.1);
+  color: var(--accent-dark);
+}
+
+.source-badge.configured_static {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--warning);
+}
+
+.review-status-pill.warn {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.13);
+  color: var(--warning);
+}
+
+.review-status-pill.clear {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--gain);
 }
 
 .metric-grid {
@@ -685,6 +774,16 @@ button {
 .review-metric.primary {
   border-color: rgba(20, 184, 166, 0.55);
   background: rgba(20, 184, 166, 0.1);
+}
+
+.review-metric.review-required {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.review-metric.review-clear {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.09);
 }
 
 .review-metric span {
@@ -931,18 +1030,10 @@ button {
   font-weight: 900;
 }
 
-.route-path {
+.route-card-title {
   margin: 0;
   color: var(--ink);
-  font-size: 1rem;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-}
-
-.provider-path {
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   line-height: 1.45;
   overflow-wrap: anywhere;
 }
@@ -984,6 +1075,27 @@ button {
   display: grid;
   gap: 12px;
   padding: 0 18px 16px;
+}
+
+.route-warning {
+  display: grid;
+  gap: 5px;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 11px 12px;
+}
+
+.route-warning strong {
+  color: var(--warning);
+  font-size: 0.84rem;
+}
+
+.route-warning p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
 }
 
 .complexity-block {
@@ -1111,16 +1223,21 @@ button {
 
 .leg-table {
   width: 100%;
-  min-width: 760px;
+  min-width: 720px;
   border-collapse: collapse;
 }
 
 .sensitivity-table {
-  min-width: 900px;
+  min-width: 980px;
 }
 
 .comparison-table {
-  min-width: 1020px;
+  min-width: 760px;
+}
+
+.route-cell {
+  min-width: 260px;
+  white-space: normal !important;
 }
 
 .leg-table th,
@@ -1220,6 +1337,22 @@ button {
   display: block;
   margin-top: 4px;
   color: var(--ink);
+}
+
+.diagnostic-section {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.diagnostic-section h3 {
+  margin: 0;
+  padding: 0 18px;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.route-graph-grid {
+  padding-top: 12px;
 }
 
 .precision-note {

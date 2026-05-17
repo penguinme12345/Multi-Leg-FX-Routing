@@ -6,6 +6,7 @@ const edges: Edge[] = [
   {
     provider: "DirectSlow",
     providerType: "fiat_broker",
+    rateSource: "live_api",
     from: "GBP",
     to: "JPY",
     rate: 180,
@@ -15,6 +16,7 @@ const edges: Edge[] = [
   {
     provider: "DirectBest",
     providerType: "fiat_broker",
+    rateSource: "live_api",
     from: "GBP",
     to: "JPY",
     rate: 181,
@@ -24,6 +26,7 @@ const edges: Edge[] = [
   {
     provider: "HubA",
     providerType: "fiat_broker",
+    rateSource: "live_api",
     from: "GBP",
     to: "USD",
     rate: 1.25,
@@ -33,6 +36,7 @@ const edges: Edge[] = [
   {
     provider: "HubB",
     providerType: "fiat_broker",
+    rateSource: "live_api",
     from: "USD",
     to: "JPY",
     rate: 150,
@@ -42,6 +46,7 @@ const edges: Edge[] = [
   {
     provider: "DeadEnd",
     providerType: "fiat_broker",
+    rateSource: "live_api",
     from: "USD",
     to: "CAD",
     rate: 1.2,
@@ -64,6 +69,47 @@ describe("findTopRoutes", () => {
     const [bestRoute] = findTopRoutes("GBP", "JPY", 1000, edges);
 
     expect(bestRoute.differenceVsDirect).toBeCloseTo(6500);
+  });
+
+  it("flags routes with unusually large improvement versus direct for review", () => {
+    const reviewEdges: Edge[] = [
+      {
+        provider: "Direct",
+        providerType: "fiat_broker",
+        rateSource: "live_api",
+        from: "USD",
+        to: "EUR",
+        rate: 1,
+        feePercent: 0,
+        feeFlat: 0
+      },
+      {
+        provider: "StaticVenue",
+        providerType: "stablecoin_venue",
+        rateSource: "configured_static",
+        from: "USD",
+        to: "USDT",
+        rate: 1.06,
+        feePercent: 0,
+        feeFlat: 0
+      },
+      {
+        provider: "StaticVenue",
+        providerType: "stablecoin_venue",
+        rateSource: "configured_static",
+        from: "USDT",
+        to: "EUR",
+        rate: 1,
+        feePercent: 0,
+        feeFlat: 0
+      }
+    ];
+    const [bestRoute] = findTopRoutes("USD", "EUR", 1000, reviewEdges);
+
+    expect(bestRoute.differenceVsDirectPercent).toBeGreaterThan(5);
+    expect(bestRoute.routeWarnings[0]).toMatchObject({
+      severity: "review_required"
+    });
   });
 
   it("returns an empty list when no valid route exists", () => {

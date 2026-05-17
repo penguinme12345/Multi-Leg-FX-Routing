@@ -1,11 +1,13 @@
 import { explainRoute } from "@/lib/routing/explainRoute";
 import { generateRoutes } from "@/lib/routing/generateRoutes";
+import { buildRouteWarnings } from "@/lib/routing/routeReview";
 import { simulateRoute } from "@/lib/routing/simulateRoute";
 import type {
   ComplexityFilter,
   Edge,
   RailFilter,
   RankedRouteResult,
+  RouteGraphStats,
   RouteResult
 } from "@/lib/routing/types";
 
@@ -21,6 +23,7 @@ type FindTopRoutesOptions = {
 type RankedRouteSet = {
   routes: RankedRouteResult[];
   directBenchmark: RankedRouteResult | null;
+  stats: RouteGraphStats;
 };
 
 export function findTopRoutes(
@@ -69,7 +72,15 @@ export function findRankedRoutes(
 
   return {
     routes,
-    directBenchmark
+    directBenchmark,
+    stats: {
+      currencyCount: collectSupportedCurrencies(activeEdges).size,
+      edgeCount: activeEdges.length,
+      candidateRouteCount: candidateRoutes.length,
+      validRouteCount: simulatedRoutes.length,
+      returnedRouteCount: routes.length,
+      invalidRouteCount: candidateRoutes.length - simulatedRoutes.length
+    }
   };
 }
 
@@ -119,9 +130,11 @@ function enrichRoute(
         ? null
         : (differenceVsDirect / bestDirectRoute.finalAmount) * 100
   };
+  const routeWarnings = buildRouteWarnings(enrichedRoute);
 
   return {
     ...enrichedRoute,
+    routeWarnings,
     explanation: explainRoute(enrichedRoute, rank)
   };
 }

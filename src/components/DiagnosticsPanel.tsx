@@ -8,6 +8,8 @@ type DiagnosticsPanelProps = {
 };
 
 export function DiagnosticsPanel({ diagnostics, providerCoverage, resultQuality }: DiagnosticsPanelProps) {
+  const { routeGraphStats } = diagnostics;
+
   return (
     <section className="panel diagnostics-panel">
       <div className="panel-heading">
@@ -36,6 +38,17 @@ export function DiagnosticsPanel({ diagnostics, providerCoverage, resultQuality 
       <p className="precision-note">
         Financial precision note: demo uses JavaScript numbers and presentation-layer rounding. Production systems should use decimal or fixed-point arithmetic.
       </p>
+      <div className="diagnostic-section">
+        <h3>Route Graph</h3>
+        <div className="diagnostic-grid route-graph-grid">
+          <span>Currencies <strong>{routeGraphStats.currencyCount}</strong></span>
+          <span>Edges loaded <strong>{routeGraphStats.edgeCount}</strong></span>
+          <span>Candidates evaluated <strong>{routeGraphStats.candidateRouteCount}</strong></span>
+          <span>Valid routes <strong>{routeGraphStats.validRouteCount}</strong></span>
+          <span>Returned <strong>{routeGraphStats.returnedRouteCount}</strong></span>
+          <span>Invalid routes <strong>{routeGraphStats.invalidRouteCount ?? 0}</strong></span>
+        </div>
+      </div>
     </section>
   );
 }

@@ -11,6 +11,7 @@ import type {
   ProviderHealth,
   RailFilter,
   RouteDiagnostics,
+  RouteGraphStats,
   RoutesResponse
 } from "@/lib/routing/types";
 
@@ -58,7 +59,8 @@ export async function calculateRoutesResponse(body: unknown): Promise<RouteCalcu
         maxLegs,
         railFilter,
         complexityFilter,
-        disabledProviders: activeDisabledProviders.length
+        disabledProviders: activeDisabledProviders.length,
+        routeGraphStats: buildEmptyRouteGraphStats()
       });
 
       return {
@@ -84,14 +86,18 @@ export async function calculateRoutesResponse(body: unknown): Promise<RouteCalcu
       };
     }
 
+    const supportedCurrencies = collectSupportedCurrencies(edgeResult.edges);
     const baseDiagnostics = buildDiagnostics(edgeResult.providerHealth, providers.length, providerCoverage, calculateResultQuality(providerCoverage, false), {
       maxLegs,
       railFilter,
       complexityFilter,
-      disabledProviders: activeDisabledProviders.length
+      disabledProviders: activeDisabledProviders.length,
+      routeGraphStats: {
+        ...buildEmptyRouteGraphStats(),
+        currencyCount: supportedCurrencies.size,
+        edgeCount: edgeResult.edges.length
+      }
     });
-
-    const supportedCurrencies = collectSupportedCurrencies(edgeResult.edges);
 
     if (!supportedCurrencies.has(source) || !supportedCurrencies.has(target)) {
       return {
@@ -118,7 +124,8 @@ export async function calculateRoutesResponse(body: unknown): Promise<RouteCalcu
       maxLegs,
       railFilter,
       complexityFilter,
-      disabledProviders: activeDisabledProviders.length
+      disabledProviders: activeDisabledProviders.length,
+      routeGraphStats: rankedResult.stats
     });
     const amountSensitivity = buildAmountSensitivity(source, target, edgeResult.edges, undefined, {
       maxLegs,
@@ -180,7 +187,8 @@ export function createRouteErrorBody(
       maxLegs: 3,
       railFilter: "all",
       complexityFilter: "all",
-      disabledProviders: 0
+      disabledProviders: 0,
+      routeGraphStats: buildEmptyRouteGraphStats()
     });
 
   return {
@@ -288,6 +296,7 @@ function buildDiagnostics(
     railFilter: RailFilter;
     complexityFilter: ComplexityFilter;
     disabledProviders: number;
+    routeGraphStats: RouteGraphStats;
   }
 ): RouteDiagnostics {
   const liveProvidersUsed = providerHealth.filter(
@@ -313,6 +322,18 @@ function buildDiagnostics(
     railFilter: settings.railFilter,
     activeRailFilter: settings.railFilter,
     complexityFilter: settings.complexityFilter,
-    activeComplexityFilter: settings.complexityFilter
+    activeComplexityFilter: settings.complexityFilter,
+    routeGraphStats: settings.routeGraphStats
+  };
+}
+
+function buildEmptyRouteGraphStats(): RouteGraphStats {
+  return {
+    currencyCount: 0,
+    edgeCount: 0,
+    candidateRouteCount: 0,
+    validRouteCount: 0,
+    returnedRouteCount: 0,
+    invalidRouteCount: 0
   };
 }

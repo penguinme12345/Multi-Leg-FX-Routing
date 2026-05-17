@@ -1,5 +1,7 @@
 import { formatAmount, formatDifference, formatPercent, formatRate } from "@/components/format";
 import { RouteComplexityBadge } from "@/components/RouteComplexityBadge";
+import { RoutePath } from "@/components/RoutePath";
+import { RouteWarningNotice } from "@/components/RouteWarningNotice";
 import type { RankedRouteResult } from "@/lib/routing/types";
 
 type RecommendedRouteCardProps = {
@@ -33,8 +35,9 @@ export function RecommendedRouteCard({ route, source, target }: RecommendedRoute
       </div>
       <div className="recommended-body">
         <div className="recommended-path">
-          {route.legs.map((leg) => `${leg.from} [${leg.provider}]`).join(" -> ")} -&gt; {target}
+          <RoutePath legs={route.legs} />
         </div>
+        <RouteWarningNotice warnings={route.routeWarnings} />
         <div className="metric-grid">
           <div className="metric-tile primary">
             <span>Final Delivered</span>

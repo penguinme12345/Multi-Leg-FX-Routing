@@ -9,6 +9,7 @@ import type { Edge, Provider, RankedRouteResult, RouteLegResult } from "../src/l
 const directLeg: RouteLegResult = {
   provider: "AlphaFX",
   providerType: "fiat_broker",
+  rateSource: "live_api",
   from: "GBP",
   to: "JPY",
   rate: 190,
@@ -24,6 +25,7 @@ const stablecoinLegs: RouteLegResult[] = [
   {
     provider: "BetaBank",
     providerType: "fiat_broker",
+    rateSource: "live_api",
     from: "GBP",
     to: "USD",
     rate: 1.25,
@@ -37,6 +39,7 @@ const stablecoinLegs: RouteLegResult[] = [
   {
     provider: "GammaCrypto",
     providerType: "stablecoin_venue",
+    rateSource: "configured_static",
     from: "USD",
     to: "USDT",
     rate: 0.999,
@@ -50,6 +53,7 @@ const stablecoinLegs: RouteLegResult[] = [
   {
     provider: "EpsilonChain",
     providerType: "stablecoin_venue",
+    rateSource: "configured_static",
     from: "USDT",
     to: "JPY",
     rate: 152,
@@ -92,6 +96,7 @@ describe("route insight helpers", () => {
       differenceVsDirect: 1000,
       differenceVsDirectPercent: 0.54,
       complexity: calculateComplexity(stablecoinLegs),
+      routeWarnings: [],
       explanation: ""
     };
 
@@ -108,6 +113,7 @@ describe("route insight helpers", () => {
       differenceVsDirect: 0,
       differenceVsDirectPercent: 0,
       complexity: calculateComplexity([directLeg]),
+      routeWarnings: [],
       explanation: "Direct route wins on simplicity."
     };
 
@@ -154,6 +160,7 @@ describe("disabled provider filtering", () => {
       {
         provider: "AlphaFX",
         providerType: "fiat_broker",
+        rateSource: "live_api",
         from: "GBP",
         to: "JPY",
         rate: 190,
@@ -163,6 +170,7 @@ describe("disabled provider filtering", () => {
       {
         provider: "GammaCrypto",
         providerType: "stablecoin_venue",
+        rateSource: "configured_static",
         from: "GBP",
         to: "USDT",
         rate: 1.26,

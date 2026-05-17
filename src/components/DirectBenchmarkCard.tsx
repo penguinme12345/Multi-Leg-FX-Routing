@@ -1,4 +1,5 @@
 import { formatAmount, formatRate } from "@/components/format";
+import { RoutePath } from "@/components/RoutePath";
 import type { RankedRouteResult } from "@/lib/routing/types";
 
 type DirectBenchmarkCardProps = {
@@ -18,8 +19,8 @@ export function DirectBenchmarkCard({ route, source, target }: DirectBenchmarkCa
       </div>
       {route ? (
         <div className="benchmark-body">
-          <div className="provider-path">
-            {route.legs[0].from} -[{route.legs[0].provider}]-&gt; {route.legs[0].to}
+          <div className="benchmark-path">
+            <RoutePath compact legs={route.legs} />
           </div>
           <div className="mini-metrics">
             <span>{formatAmount(route.finalAmount, target)}</span>

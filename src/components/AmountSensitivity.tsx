@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis
 } from "recharts";
-import { formatAmount, formatDifference } from "@/components/format";
+import { formatAmount, formatDifference, formatPercent } from "@/components/format";
 import type { AmountSensitivityPoint } from "@/lib/routing/types";
 
 type AmountSensitivityProps = {
@@ -36,7 +36,7 @@ export function AmountSensitivity({ source, target, points }: AmountSensitivityP
       </div>
       <div className="chart-wrap" aria-label="Amount sensitivity chart">
         <ResponsiveContainer height={240} width="100%">
-          <LineChart data={points.filter((point) => point.finalAmount !== null)}>
+          <LineChart data={points.filter((point) => point.differenceVsDirectPercent !== null)}>
             <CartesianGrid stroke="rgba(255,255,255,0.08)" />
             <XAxis
               dataKey="amount"
@@ -45,7 +45,7 @@ export function AmountSensitivity({ source, target, points }: AmountSensitivityP
             />
             <YAxis
               stroke="#9ca3af"
-              tickFormatter={(value) => `${Number(value).toLocaleString("en-US")}`}
+              tickFormatter={(value) => `${Number(value).toFixed(2)}%`}
             />
             <Tooltip
               contentStyle={{
@@ -54,11 +54,11 @@ export function AmountSensitivity({ source, target, points }: AmountSensitivityP
                 borderRadius: 8,
                 color: "#f4f4f5"
               }}
-              formatter={(value) => [formatAmount(Number(value), target), "Final delivered"]}
+              formatter={(value) => [`${Number(value).toFixed(2)}%`, "Improvement vs direct"]}
               labelFormatter={(value) => `Input ${formatAmount(Number(value), source)}`}
             />
             <Line
-              dataKey="finalAmount"
+              dataKey="differenceVsDirectPercent"
               dot={{ r: 4 }}
               stroke="#14b8a6"
               strokeWidth={2}
@@ -77,7 +77,9 @@ export function AmountSensitivity({ source, target, points }: AmountSensitivityP
               <th className="numeric">Final delivered</th>
               <th className="numeric">Effective rate</th>
               <th className="numeric">Vs direct</th>
+              <th className="numeric">Vs direct %</th>
               <th>Complexity</th>
+              <th>Review</th>
             </tr>
           </thead>
           <tbody>
@@ -93,7 +95,15 @@ export function AmountSensitivity({ source, target, points }: AmountSensitivityP
                   {point.effectiveRate === null ? "N/A" : `${point.effectiveRate.toFixed(4)} ${target} / ${source}`}
                 </td>
                 <td className="numeric">{formatDifference(point.differenceVsDirect, target)}</td>
+                <td className="numeric">{formatPercent(point.differenceVsDirectPercent)}</td>
                 <td>{point.complexity?.level ?? "N/A"}</td>
+                <td>
+                  {point.reviewRequired ? (
+                    <span className="review-status-pill warn">Review Required</span>
+                  ) : (
+                    <span className="review-status-pill clear">Clear</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -71,6 +71,7 @@ async function fetchBaseRates(provider: Provider, base: string): Promise<BaseRes
         .map(([to, rate]) => ({
           provider: provider.name,
           providerType: provider.type,
+          rateSource: "live_api",
           from: base,
           to: to.toUpperCase(),
           rate: rate as number,

@@ -1,4 +1,4 @@
-import { formatAmount, formatRate } from "@/components/format";
+import { formatAmount, formatRate, formatRateSource } from "@/components/format";
 import type { RouteLegResult } from "@/lib/routing/types";
 
 type CalculationAuditTrailProps = {
@@ -14,6 +14,12 @@ export function CalculationAuditTrail({ legs }: CalculationAuditTrailProps) {
           return (
             <div className="audit-leg" key={`${leg.provider}-${leg.from}-${leg.to}-${index}`}>
               <h4>Leg {index + 1}: {leg.from} to {leg.to} via {leg.provider}</h4>
+              <p>
+                Rate source:{" "}
+                <strong title={leg.rateSource === "configured_static" ? "Configured rates are loaded from providers.json, not a live provider API." : undefined}>
+                  {formatRateSource(leg.rateSource)}
+                </strong>
+              </p>
               <p>Input: <strong>{formatAmount(leg.inputAmount, leg.from)}</strong></p>
               <p>
                 Fee: <strong>{formatAmount(leg.inputAmount, leg.from)} x {leg.feePercent.toFixed(4)} + {formatAmount(leg.feeFlat, leg.from)} = {formatAmount(leg.fee, leg.from)}</strong>

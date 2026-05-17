@@ -23,6 +23,9 @@ export function formatRouteSummary({ route, source, target, amount, warnings = [
       ? "No direct route available"
       : `${route.differenceVsDirect >= 0 ? "+" : ""}${formatNumber(route.differenceVsDirect)} ${target}`;
   const warningText = warnings.length ? `\nProvider notes:\n${warnings.map((warning) => `- ${warning}`).join("\n")}` : "";
+  const routeWarningText = route.routeWarnings.length
+    ? `\nRoute review:\n${route.routeWarnings.map((warning) => `- Review Required: ${warning.message}`).join("\n")}`
+    : "";
 
   return `Route #${route.rank}
 
@@ -45,7 +48,7 @@ Complexity:
 ${route.complexity.level} (${route.complexity.reasons.join(", ")})
 
 Notes:
-${route.explanation}${warningText}`;
+${route.explanation}${routeWarningText}${warningText}`;
 }
 
 function formatNumber(value: number) {

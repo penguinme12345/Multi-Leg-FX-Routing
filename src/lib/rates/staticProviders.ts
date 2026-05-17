@@ -9,6 +9,7 @@ export function buildStaticEdges(providers: Provider[]): Edge[] {
     return provider.pairs.map((pair) => ({
       provider: provider.name,
       providerType: provider.type,
+      rateSource: "configured_static",
       from: pair.from.toUpperCase(),
       to: pair.to.toUpperCase(),
       rate: pair.rate,

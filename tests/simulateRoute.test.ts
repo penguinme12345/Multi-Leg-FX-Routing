@@ -8,6 +8,7 @@ describe("simulateRoute", () => {
       {
         provider: "TestBank",
         providerType: "fiat_broker",
+        rateSource: "live_api",
         from: "GBP",
         to: "USD",
         rate: 1.25,
@@ -29,6 +30,7 @@ describe("simulateRoute", () => {
       {
         provider: "ProviderA",
         providerType: "fiat_broker",
+        rateSource: "live_api",
         from: "GBP",
         to: "USD",
         rate: 2,
@@ -38,6 +40,7 @@ describe("simulateRoute", () => {
       {
         provider: "ProviderB",
         providerType: "stablecoin_venue",
+        rateSource: "configured_static",
         from: "USD",
         to: "JPY",
         rate: 100,
@@ -59,6 +62,7 @@ describe("simulateRoute", () => {
       {
         provider: "FlatFeeProvider",
         providerType: "fiat_broker",
+        rateSource: "live_api",
         from: "CAD",
         to: "AUD",
         rate: 1.1,

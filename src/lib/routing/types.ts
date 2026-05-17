@@ -1,5 +1,6 @@
 export type ProviderType = "fiat_broker" | "stablecoin_venue";
-export type RateSource = "live_api" | "static";
+export type ProviderRateSource = "live_api" | "static";
+export type RateSource = "live_api" | "configured_static";
 export type RailFilter = "all" | "fiat_only" | "stablecoin_allowed" | "stablecoin_only";
 export type ComplexityFilter = "all" | "low" | "low_medium" | "high_allowed";
 
@@ -12,7 +13,7 @@ export type StaticPair = {
 export type Provider = {
   name: string;
   type: ProviderType;
-  rate_source: RateSource;
+  rate_source: ProviderRateSource;
   api?: {
     endpoint: string;
     docs: string;
@@ -28,6 +29,7 @@ export type Provider = {
 export type Edge = {
   provider: string;
   providerType: ProviderType;
+  rateSource: RateSource;
   from: string;
   to: string;
   rate: number;
@@ -62,6 +64,7 @@ export type ProviderHealth = {
 export type RouteLegResult = {
   provider: string;
   providerType: ProviderType;
+  rateSource: RateSource;
   from: string;
   to: string;
   rate: number;
@@ -92,6 +95,16 @@ export type ResultQuality = {
   reason: string;
 };
 
+export type RouteWarning = {
+  severity: "review_required";
+  message: string;
+};
+
+export type ReviewStatus = {
+  status: "clear" | "review_required";
+  reason: string;
+};
+
 export type RouteResult = {
   path: string[];
   legs: RouteLegResult[];
@@ -100,6 +113,7 @@ export type RouteResult = {
   differenceVsDirect: number | null;
   differenceVsDirectPercent: number | null;
   complexity: RouteComplexity;
+  routeWarnings: RouteWarning[];
   explanation: string;
 };
 
@@ -116,7 +130,17 @@ export type AmountSensitivityPoint = {
   differenceVsDirect: number | null;
   differenceVsDirectPercent: number | null;
   complexity: RouteComplexity | null;
+  reviewRequired: boolean;
   message?: string;
+};
+
+export type RouteGraphStats = {
+  currencyCount: number;
+  edgeCount: number;
+  candidateRouteCount: number;
+  validRouteCount: number;
+  returnedRouteCount: number;
+  invalidRouteCount?: number;
 };
 
 export type RouteDiagnostics = {
@@ -135,6 +159,7 @@ export type RouteDiagnostics = {
   activeRailFilter: RailFilter;
   complexityFilter: ComplexityFilter;
   activeComplexityFilter: ComplexityFilter;
+  routeGraphStats: RouteGraphStats;
 };
 
 export type RoutesResponse = {

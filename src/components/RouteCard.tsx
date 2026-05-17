@@ -2,8 +2,10 @@ import { CopyRouteSummaryButton } from "@/components/CopyRouteSummaryButton";
 import { formatAmount, formatDifference, formatPercent, formatRate } from "@/components/format";
 import { RouteComplexityBadge } from "@/components/RouteComplexityBadge";
 import { RouteExplanation } from "@/components/RouteExplanation";
+import { RoutePath } from "@/components/RoutePath";
 import { RouteLegTable } from "@/components/RouteLegTable";
 import { CalculationAuditTrail } from "@/components/CalculationAuditTrail";
+import { RouteWarningNotice } from "@/components/RouteWarningNotice";
 import type { RankedRouteResult } from "@/lib/routing/types";
 
 type RouteCardProps = {
@@ -15,9 +17,6 @@ type RouteCardProps = {
 };
 
 export function RouteCard({ route, source, target, amount, warnings }: RouteCardProps) {
-  const providerPath = route.legs
-    .map((leg) => `${leg.from} -[${leg.provider}]-> ${leg.to}`)
-    .join("  ");
   const differenceClass =
     route.differenceVsDirect === null
       ? ""
@@ -31,8 +30,8 @@ export function RouteCard({ route, source, target, amount, warnings }: RouteCard
         <div className="route-heading">
           <span className="rank-pill">{getRouteLabel(route.rank)}</span>
           <div>
-            <h2 className="route-path">{route.path.join(" -> ")}</h2>
-            <div className="provider-path">{providerPath}</div>
+            <h2 className="route-card-title">Provider route</h2>
+            <RoutePath legs={route.legs} />
           </div>
         </div>
         <div className="route-values">
@@ -58,6 +57,7 @@ export function RouteCard({ route, source, target, amount, warnings }: RouteCard
         <span className="diff-badge">{route.legs.length} leg{route.legs.length === 1 ? "" : "s"}</span>
       </div>
       <div className="route-insights">
+        <RouteWarningNotice warnings={route.routeWarnings} />
         <RouteComplexityBadge complexity={route.complexity} />
         <RouteExplanation explanation={route.explanation} rank={route.rank} />
         <CopyRouteSummaryButton

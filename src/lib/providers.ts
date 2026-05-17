@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { Provider, ProviderType, RateSource, StaticPair } from "@/lib/routing/types";
+import type { Provider, ProviderRateSource, ProviderType, StaticPair } from "@/lib/routing/types";
 
 export class ProviderConfigError extends Error {
   constructor(message: string) {
@@ -12,7 +12,7 @@ export class ProviderConfigError extends Error {
 type RawObject = Record<string, unknown>;
 
 const providerTypes = new Set<ProviderType>(["fiat_broker", "stablecoin_venue"]);
-const rateSources = new Set<RateSource>(["live_api", "static"]);
+const rateSources = new Set<ProviderRateSource>(["live_api", "static"]);
 
 export async function loadProviders(filePath = path.join(process.cwd(), "providers.json")) {
   let raw: string;
@@ -92,14 +92,14 @@ function readProviderType(provider: RawObject, index: number): ProviderType {
   return value as ProviderType;
 }
 
-function readRateSource(provider: RawObject, index: number): RateSource {
+function readRateSource(provider: RawObject, index: number): ProviderRateSource {
   const value = provider.rate_source;
 
-  if (typeof value !== "string" || !rateSources.has(value as RateSource)) {
+  if (typeof value !== "string" || !rateSources.has(value as ProviderRateSource)) {
     throw new ProviderConfigError(`Provider at index ${index} has an invalid rate_source.`);
   }
 
-  return value as RateSource;
+  return value as ProviderRateSource;
 }
 
 function readFeeModel(provider: RawObject, index: number): Provider["fee_model"] {
@@ -127,7 +127,7 @@ function readFeeModel(provider: RawObject, index: number): Provider["fee_model"]
   };
 }
 
-function readApi(provider: RawObject, rateSource: RateSource, index: number): Provider["api"] {
+function readApi(provider: RawObject, rateSource: ProviderRateSource, index: number): Provider["api"] {
   if (rateSource !== "live_api") {
     return undefined;
   }
@@ -144,7 +144,7 @@ function readApi(provider: RawObject, rateSource: RateSource, index: number): Pr
   };
 }
 
-function readPairs(provider: RawObject, rateSource: RateSource, index: number): StaticPair[] | undefined {
+function readPairs(provider: RawObject, rateSource: ProviderRateSource, index: number): StaticPair[] | undefined {
   if (rateSource !== "static") {
     return undefined;
   }

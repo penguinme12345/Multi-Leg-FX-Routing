@@ -1,4 +1,5 @@
-import { formatAmount, formatDifference, formatPercent, formatRate } from "@/components/format";
+import { formatAmount, formatPercent } from "@/components/format";
+import { RoutePath } from "@/components/RoutePath";
 import type { RankedRouteResult } from "@/lib/routing/types";
 
 type RouteComparisonTableProps = {
@@ -25,28 +26,28 @@ export function RouteComparisonTable({ routes, source, target }: RouteComparison
           <thead>
             <tr>
               <th>Rank</th>
-              <th>Path</th>
+              <th>Route</th>
               <th className="numeric">Final Delivered</th>
-              <th className="numeric">Effective Rate</th>
               <th className="numeric">Vs Direct</th>
-              <th className="numeric">Vs Direct %</th>
               <th>Complexity</th>
-              <th className="numeric">Legs</th>
-              <th className="numeric">Providers</th>
+              <th>Review</th>
             </tr>
           </thead>
           <tbody>
             {routes.map((route) => (
-              <tr key={`${route.rank}-${route.path.join("-")}`}>
+              <tr key={`${route.rank}-${route.path.join("-")}-${route.legs.map((leg) => leg.provider).join("-")}`}>
                 <td>#{route.rank}</td>
-                <td>{route.path.join(" -> ")}</td>
+                <td className="route-cell"><RoutePath compact legs={route.legs} /></td>
                 <td className="numeric">{formatAmount(route.finalAmount, target)}</td>
-                <td className="numeric">{formatRate(route.effectiveRate)} {target} / {source}</td>
-                <td className="numeric">{formatDifference(route.differenceVsDirect, target)}</td>
                 <td className="numeric">{formatPercent(route.differenceVsDirectPercent)}</td>
                 <td>{route.complexity.level}</td>
-                <td className="numeric">{route.legs.length}</td>
-                <td className="numeric">{new Set(route.legs.map((leg) => leg.provider)).size}</td>
+                <td>
+                  {route.routeWarnings.some((warning) => warning.severity === "review_required") ? (
+                    <span className="review-status-pill warn">Review Required</span>
+                  ) : (
+                    <span className="review-status-pill clear">Clear</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

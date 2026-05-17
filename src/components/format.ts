@@ -43,3 +43,7 @@ export function formatDateTime(value: string) {
 
   return date.toLocaleTimeString();
 }
+
+export function formatRateSource(value: "live_api" | "configured_static") {
+  return value === "live_api" ? "Live API" : "Configured rates";
+}

@@ -41,6 +41,7 @@ describe("static provider normalization", () => {
       providerType: "stablecoin_venue",
       from: "USD",
       to: "USDT",
+      rateSource: "configured_static",
       rate: 0.999,
       feePercent: 0.001,
       feeFlat: 1
